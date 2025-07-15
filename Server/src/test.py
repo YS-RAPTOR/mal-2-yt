@@ -4,14 +4,7 @@ from mal.enums import AnimeListStatus
 
 
 if __name__ == "__main__":
-    mal_ids = common.get_animelist("Y_raptor_Y", [AnimeListStatus.completed])
+    with open("mal_ids.pkl", "rb") as f:
+        mal_ids = pickle.load(f)
 
-    if isinstance(mal_ids, common.Error):
-        print("The MAL list is private or the user does not exist.")
-        exit(1)
-
-    for mal_id in mal_ids:
-        print(mal_id)
-
-    with open("mal_ids.pkl", "wb") as f:
-        pickle.dump(mal_ids, f)
+    common.get_song_list(mal_ids)

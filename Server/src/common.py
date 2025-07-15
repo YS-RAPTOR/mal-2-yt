@@ -1,23 +1,13 @@
+import os
+import requests
 from dotenv import load_dotenv
 from typing import List, Literal
 from mal import client
 from mal.anime import AnimeListEntry
 from mal.enums import AnimeListStatus
-import os
 
 load_dotenv()
 mal_client = client.Client(os.environ["MAL_CLIENT_ID"])
-
-
-class AnimeSong:
-    def __init__(self, title: str, author: str, anime: str, song_type: str):
-        self.title = title
-        self.author = author
-        self.anime = anime
-        self.song_type = song_type  # 'OP1', 'ED1', etc.
-
-    def setup_youtube(self, youtube_links: List[str]):
-        self.youtube_links = youtube_links
 
 
 class YoutubeSong:
@@ -26,23 +16,33 @@ class YoutubeSong:
         self.author = author
 
 
+class AnimeSong:
+    def __init__(self, title: str, author: str, anime: str):
+        self.title = title
+        self.author = author
+        self.anime = anime
+
+    def setup_youtube(self, youtube_songs: List[YoutubeSong]):
+        self.youtube_songs = youtube_songs
+
+
 class Error:
     def __init__(self, type: Literal["PrivateAnimeList"]):
         self.type = type
 
 
 def get_animelist(username: str, filters: List[AnimeListStatus]) -> List[int] | Error:
+    LIMIT = 100
     offset = 0
-    limit = 100
     animelist: List[AnimeListEntry] = []
 
     while True:
         try:
             animes = list(
-                mal_client.get_anime_list(username, limit=limit, offset=offset)
+                mal_client.get_anime_list(username, limit=LIMIT, offset=offset)
             )
             animelist.extend(animes)
-            if len(animes) < limit:
+            if len(animes) < LIMIT:
                 break
             offset += 100
         except Exception as e:
@@ -62,6 +62,14 @@ def get_playlist(playlist: str) -> List[YoutubeSong]:
 
 
 def get_song_list(mal_ids: List[int]) -> List[AnimeSong]:
+    URL = "https://api.animethemes.moe/anime?include=animethemes,resources,images&filter[has]=resources&filter[site]=MyAnimeList&filter[external_id]="
+
+    for id in mal_ids:
+        url = URL + str(id)
+        anime_json = requests.get(url)
+        print(anime_json.json())
+        break
+
     return []
 
 
